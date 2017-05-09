@@ -35,14 +35,9 @@ def GetNumTowersByTimeActions():
 				#lon = t[1]
 				#lat = t[2]
 
-				year = int(da[0:2])
-				if year < 20:
-					year += 2000
-				else:
-					year += 1900
-				month = int(da[2:4])
-
-				ym = "%d%02d" % (year, month)
+				#year = da[0:4]
+				#month = da[4:6]
+				ym = da[0:6]
 
 				if ym in da_num:
 					da_num[ym] += 1
@@ -101,8 +96,14 @@ def _GetTsCoord():
 				mo = re.match(r"\d\d\/\d\d\/\d\d 00:00:00", da)
 				if mo is None:
 					raise RuntimeError("Unexpected")
+
 				# year month day
-				da = "%s%s%s" % (da[6:8], da[0:2], da[3:5])
+				year = int(da[6:8])
+				if year < 30:
+					year += 2000
+				else:
+					year += 1900
+				da = "%d%s%s" % (year, da[0:2], da[3:5])
 
 				lat = float(lat)
 				lon = float(lon)

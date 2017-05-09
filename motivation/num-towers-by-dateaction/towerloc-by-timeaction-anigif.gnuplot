@@ -42,3 +42,7 @@ do for [i=1:310] {
 
 	print sprintf("lineno=%d", lineno)
 }
+
+# Note: Towards the end, there are days with more than 1000 new towers in a day.
+#   When you plot 1000 towers at a time, there appears vertical strips since records are sorted by ts first and then latitude.
+#     To remove them, the order can be randomized. Not a big deal until they need to be presented.

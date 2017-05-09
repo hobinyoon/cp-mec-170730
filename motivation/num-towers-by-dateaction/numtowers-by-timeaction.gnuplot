@@ -43,4 +43,4 @@ set title "Total number of towers"
 set ylabel "# of towers"
 
 plot \
-FN_IN u 1:3 w lp pt 7 pointsize 0.2 not
+FN_IN u 1:3 w l lw 4 not

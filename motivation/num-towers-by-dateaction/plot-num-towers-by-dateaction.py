@@ -27,20 +27,47 @@ def main(argv):
 
 	Util.MkDirs(Conf.dn_result)
 
-	PlotByTime()
+	#PlotByTime()
 	#PlotLocByTime()
+	PlotLocByTimeAniGif()
 
 
 def PlotByTime():
 	fn_numtowers_by_timeactions = TowerData.GetNumTowersByTimeActions()
 	fn_out = "%s/numtowers-by-timeaction.pdf" % Conf.dn_result
 
-	with Cons.MT("Plotting ..."):
+	with Cons.MT("Plotting num towers by time ..."):
 		env = os.environ.copy()
 		env["FN_IN"] = fn_numtowers_by_timeactions
 		env["FN_OUT"] = fn_out
 
 		Util.RunSubp("gnuplot %s/numtowers-by-timeaction.gnuplot" % os.path.dirname(__file__), env=env)
+		Cons.P("Created %s %d" % (fn_out, os.path.getsize(fn_out)))
+
+
+def PlotLocByTime():
+	fn_ts_coord = TowerData.GetTsCoord()
+	fn_out = "%s/towerloc-by-timeaction.pdf" % Conf.dn_result
+
+	with Cons.MT("Plotting locations by time ..."):
+		env = os.environ.copy()
+		env["FN_IN"] = fn_ts_coord
+		env["FN_OUT"] = fn_out
+
+		Util.RunSubp("gnuplot %s/towerloc-by-timeaction.gnuplot" % os.path.dirname(__file__), env=env)
+		Cons.P("Created %s %d" % (fn_out, os.path.getsize(fn_out)))
+
+
+def PlotLocByTimeAniGif():
+	fn_ts_coord = TowerData.GetTsCoord()
+	fn_out = "%s/towerloc-by-timeaction.gif" % Conf.dn_result
+
+	with Cons.MT("Plotting locations by time ..."):
+		env = os.environ.copy()
+		env["FN_IN"] = fn_ts_coord
+		env["FN_OUT"] = fn_out
+
+		Util.RunSubp("gnuplot %s/towerloc-by-timeaction-anigif.gnuplot" % os.path.dirname(__file__), env=env)
 		Cons.P("Created %s %d" % (fn_out, os.path.getsize(fn_out)))
 
 

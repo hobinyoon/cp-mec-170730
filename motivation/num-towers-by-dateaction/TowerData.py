@@ -13,7 +13,7 @@ import TowermapCsv
 
 
 def GetNumTowersByTimeActions():
-	fn_in = _GetTsCoord()
+	fn_in = GetTsCoord()
 	fn_out = "%s/num-towers-by-timeaction" % Conf.dn_result
 
 	if os.path.isfile(fn_out):
@@ -56,7 +56,7 @@ def GetNumTowersByTimeActions():
 		return fn_out
 
 
-def _GetTsCoord():
+def GetTsCoord():
 	fn_towermap_csv = TowermapCsv.GetFile()
 	fn_out = "%s/towers-ts-coord" % Conf.dn_result
 

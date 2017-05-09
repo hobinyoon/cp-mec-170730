@@ -49,7 +49,7 @@ set tics back
 
 do for [t=1997:2016] {
 	set title sprintf("Year %d", t)
-	plot FN_IN u ($1 <= (t * 10000) ? $2 : 1/0):3 w p pt 7 pointsize 0.3 not
+	plot FN_IN u ($1 <= (t * 10000) ? $2 : 1/0):3 w p pt 7 pointsize 0.15 not
 
 	# TODO: new ones too
 }

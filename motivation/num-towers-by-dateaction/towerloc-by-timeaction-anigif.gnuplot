@@ -32,7 +32,7 @@ PS=0.3
 PT=1
 
 # 310078 lines
-do for [i=0:310] {
+do for [i=1:310] {
 	lineno=i*1000
 
 	set title system("awk '{if (NR == " . lineno . ") printf \"%s/%s/%s %d towers\", substr($1,1,4), substr($1,5,2), substr($1,7,2), NR}' " . FN_IN)

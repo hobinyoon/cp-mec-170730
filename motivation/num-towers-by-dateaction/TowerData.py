@@ -50,9 +50,13 @@ def GetNumTowersByTimeActions():
 					da_num[ym] = 1
 
 		#Cons.P(pprint.pformat(da_num))
+		fmt = "%6s %6d %6d"
 		with open(fn_out, "w") as fo:
+			fo.write(Util.BuildHeader(fmt, "year_month num_towers num_towers_culumated") + "\n")
+			num_total = 0
 			for ym, num in sorted(da_num.iteritems()):
-				fo.write("%s %d\n" % (ym, num))
+				num_total += num
+				fo.write((fmt + "\n") % (ym, num, num_total))
 		Cons.P("Created %s %d" % (fn_out, os.path.getsize(fn_out)))
 		return fn_out
 

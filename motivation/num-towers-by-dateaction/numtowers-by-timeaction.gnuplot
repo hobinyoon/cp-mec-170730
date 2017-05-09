@@ -20,8 +20,8 @@ if (1) {
 set terminal pdfcairo enhanced size 2.3in, (2.3*0.85)in
 set output FN_OUT
 
-set xlabel "Time (year)"
-set ylabel "New towers / month" offset -0.8,0
+set xlabel "Time"
+set ylabel "# of towers / month" offset -0.8,0
 
 set border back lc rgb "#808080"
 set grid xtics ytics back lc rgb "#808080"
@@ -34,5 +34,13 @@ set logscale y
 
 set xrange[X_MIN:X_MAX]
 
+set title "Number of new towers"
+
 plot \
 FN_IN u 1:2 w lp pt 7 pointsize 0.2 not
+
+set title "Total number of towers"
+set ylabel "# of towers"
+
+plot \
+FN_IN u 1:3 w lp pt 7 pointsize 0.2 not

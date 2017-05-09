@@ -39,4 +39,6 @@ do for [i=1:310] {
 
 	plot FN_IN u ($0 < (lineno - 1000) ? $2 : 1/0):3 w p pt PT pointsize PS lc rgb "#808080" not, \
 		"" u (((lineno - 1000) <= $0 && $0 < lineno) ? $2 : 1/0):3 w p pt PT pointsize PS lc rgb "red" not
+
+	print sprintf("lineno=%d", lineno)
 }

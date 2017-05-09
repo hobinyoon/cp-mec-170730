@@ -12,9 +12,9 @@ import Conf
 import TowermapCsv
 
 
-def GetNumTowersBuiltByTsRange():
+def GetNumTowersByTimeActions():
 	fn_in = _GetTsCoord()
-	fn_out = "%s/num-towers-by-ts" % Conf.dn_result
+	fn_out = "%s/num-towers-by-timeaction" % Conf.dn_result
 
 	if os.path.isfile(fn_out):
 		return fn_out

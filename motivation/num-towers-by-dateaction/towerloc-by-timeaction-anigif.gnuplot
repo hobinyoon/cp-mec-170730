@@ -45,6 +45,7 @@ if (1) {
 
 		plot FN_IN u ($0 < (num_total - num_new) ? $2 : 1/0):3 w p pt PT pointsize PS lc rgb "#808080" not, \
 			"" u (((num_total - num_new) <= $0 && $0 < num_total) ? $2 : 1/0):3 w p pt PT pointsize PS lc rgb "red" not
+		# Note: might get a speed up if you used the ::: notation
 
 		print sprintf("ym=%s", ym)
 	}

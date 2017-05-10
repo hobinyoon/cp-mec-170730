@@ -1,6 +1,9 @@
 # Tested with gnuplot 4.6 patchlevel 6
 
 FN_IN = system("echo $FN_IN")
+FN_DATEACTION_YEARMONTH = system("echo $FN_DATEACTION_YEARMONTH")
+FN_NUM_NEW              = system("echo $FN_NUM_NEW")
+FN_NUM_TOTAL            = system("echo $FN_NUM_TOTAL")
 FN_OUT = system("echo $FN_OUT")
 
 set print "-"
@@ -31,18 +34,60 @@ set tics back
 PS=0.3
 PT=1
 
-# 310078 lines
-do for [i=1:310] {
-	lineno=i*1000
+if (1) {
+	do for [i=1:words(FN_DATEACTION_YEARMONTH)] {
+		ym = word(FN_DATEACTION_YEARMONTH, i)
 
-	set title system("awk '{if (NR == " . lineno . ") printf \"%s/%s/%s %d towers\", substr($1,1,4), substr($1,5,2), substr($1,7,2), NR}' " . FN_IN)
+		num_new = word(FN_NUM_NEW, i) + 0
+		num_total = word(FN_NUM_TOTAL, i) + 0
 
-	plot FN_IN u ($0 < (lineno - 1000) ? $2 : 1/0):3 w p pt PT pointsize PS lc rgb "#808080" not, \
-		"" u (((lineno - 1000) <= $0 && $0 < lineno) ? $2 : 1/0):3 w p pt PT pointsize PS lc rgb "red" not
+		set title sprintf("%s new_nodes=%05d total_nodes=%06d", ym, num_new, num_total)
 
-	print sprintf("lineno=%d", lineno)
+		plot FN_IN u ($0 < (num_total - num_new) ? $2 : 1/0):3 w p pt PT pointsize PS lc rgb "#808080" not, \
+			"" u (((num_total - num_new) <= $0 && $0 < num_total) ? $2 : 1/0):3 w p pt PT pointsize PS lc rgb "red" not
+
+		print sprintf("ym=%s", ym)
+	}
 }
 
-# Note: Towards the end, there are days with more than 1000 new towers in a day.
-#   When you plot 1000 towers at a time, there appears vertical strips since records are sorted by ts first and then latitude.
-#     To remove them, the order can be randomized. Not a big deal until they need to be presented.
+if (0) {
+	# 19960723 -85.684444 38.195833
+	# 20161217 -83.971917 33.611722
+
+	do for [y=1996:2016] {
+		if (y == 1996) {
+			m0 = 7
+		} else {
+			m0 = 1
+		}
+
+		do for [m=m0:12] {
+			ym = y * 10000 + m * 100
+			print sprintf("ym=%d", ym)
+			set title sprintf("%d/%02d", y, m)
+			plot FN_IN u ($1 < ym ? $2 : 1/0):3 w p pt PT pointsize PS lc rgb "#808080" not, \
+				"" u ((ym <= $1 && $1 < (ym + 100)) ? $2 : 1/0):3 w p pt PT pointsize PS lc rgb "red" not, \
+			# Not sure how to plot the number of nodes here
+			# Preprocess in Python
+		}
+	}
+}
+
+
+if (0) {
+	# 310078 lines
+	do for [i=1:310] {
+		lineno=i*1000
+
+		set title system("awk '{if (NR == " . lineno . ") printf \"%s/%s/%s %d towers\", substr($1,1,4), substr($1,5,2), substr($1,7,2), NR}' " . FN_IN)
+
+		plot FN_IN u ($0 < (lineno - 1000) ? $2 : 1/0):3 w p pt PT pointsize PS lc rgb "#808080" not, \
+			"" u (((lineno - 1000) <= $0 && $0 < lineno) ? $2 : 1/0):3 w p pt PT pointsize PS lc rgb "red" not
+
+		print sprintf("lineno=%d", lineno)
+	}
+
+	# Note: Towards the end, there are days with more than 1000 new towers in a day.
+	#   When you plot 1000 towers at a time, there appears vertical strips since records are sorted by ts first and then latitude.
+	#     To remove them, the order can be randomized. Not a big deal until they need to be presented.
+}

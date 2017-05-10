@@ -59,12 +59,16 @@ def PlotLocByTime():
 
 
 def PlotLocByTimeAniGif():
+	(arr_dateaction_yearmonth, arr_num_new, arr_num_total) = TowerData.GetTsCoordMeta()
 	fn_ts_coord = TowerData.GetTsCoord()
 	fn_out = "%s/towerloc-by-timeaction.gif" % Conf.dn_result
 
 	with Cons.MT("Plotting locations by time ..."):
 		env = os.environ.copy()
 		env["FN_IN"] = fn_ts_coord
+		env["FN_DATEACTION_YEARMONTH"] = " ".join(arr_dateaction_yearmonth)
+		env["FN_NUM_NEW"] = " ".join(str(i) for i in arr_num_new)
+		env["FN_NUM_TOTAL"] = " ".join(str(i) for i in arr_num_total)
 		env["FN_OUT"] = fn_out
 
 		Util.RunSubp("gnuplot %s/towerloc-by-timeaction-anigif.gnuplot" % os.path.dirname(__file__), env=env)

@@ -56,6 +56,48 @@ def GetNumTowersByTimeActions():
 		return fn_out
 
 
+# line number for the beginning of a new month and the beginning of the next month
+# total number of nodes.
+# number of new nodes in the month.
+def GetTsCoordMeta():
+	fn = GetTsCoord()
+
+	# Group by date_aciton year-month
+	da_num = {}
+
+	with open(fn) as fo:
+		for line in fo:
+			#Cons.P(line)
+			t = line.split(" ")
+			if len(t) != 3:
+				raise RuntimeError("Unexpected: [%s]" % line)
+			# date_action
+			da = t[0]
+			#lon = t[1]
+			#lat = t[2]
+
+			#year = da[0:4]
+			#month = da[4:6]
+			ym = da[0:6]
+
+			if ym in da_num:
+				da_num[ym] += 1
+			else:
+				da_num[ym] = 1
+
+	arr_da = []
+	arr_num_new = []
+	arr_num_total = []
+	num_total = 0
+	for ym, num_new in sorted(da_num.iteritems()):
+		num_total += num_new
+		#Cons.P("%s %d %d" % (ym, num_new, num_total))
+		arr_da.append(ym)
+		arr_num_new.append(num_new)
+		arr_num_total.append(num_total)
+	return (arr_da, arr_num_new, arr_num_total)
+
+
 def GetTsCoord():
 	fn_towermap_csv = TowermapCsv.GetFile()
 	fn_out = "%s/towers-ts-coord" % Conf.dn_result

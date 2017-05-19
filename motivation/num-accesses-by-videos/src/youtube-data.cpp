@@ -4,7 +4,6 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/regex.hpp>
 
 #include "conf.h"
 #include "cons.h"
@@ -115,34 +114,111 @@ namespace YoutubeData {
 		}
 	}
 
+	// Filter out excessive Tweets with the same video from the same person in a short period of time.
 	void _FilterOutAds() {
 		Cons::MT _("Filtering out ads ...");
-		// TODO: Filter out excessive Tweets with the same video from the same person in a short period of time.
 
 		// At most 1 Tweet per video per person in a week.
-		//const long time_interval = 7 * 24 * 3600;
+		const long min_time_interval = 7 * 24 * 3600;
 
-		for (const Op* op: _entries) {
-			//const string& vid = op->obj_id;
+		struct VidUid {
+			string vid;
+			long uid;
 
-			// TODO: check the format and see if you need it in posix_time format.
-			// TODO: parallel conversion
-			Cons::P(op->created_at);
-			exit(0);
+			VidUid(const string vid_, const long uid_)
+				: vid(vid_), uid(uid_)
+			{}
 
-			//auto it = vid_cnt.find(vid);
-			//if (it == vid_cnt.end()) {
-			//	vid_cnt[vid] = 1;
-			//} else {
-			//	(it->second) ++;
-			//}
+			bool operator < (const VidUid& r) const {
+				if (vid < r.vid) return true;
+				if (vid > r.vid) return false;
+				return (uid < r.uid);
+			}
+		};
+
+		map<VidUid, boost::posix_time::ptime> viduid_lasttime;
+
+		vector<Op*> new_entries;
+		int num_filtered_out = 0;
+
+		for (Op* op0: _entries) {
+			OpYoutube* op = static_cast<OpYoutube*>(op0);
+			const string& vid = op->obj_id;
+			long uid = op->uid;
+			const boost::posix_time::ptime& ca = op->created_at_pt;
+
+			VidUid vu(vid, uid);
+			auto it = viduid_lasttime.find(vu);
+			if (it == viduid_lasttime.end()) {
+				viduid_lasttime[vu] = ca;
+				new_entries.push_back(op0);
+			} else {
+				const boost::posix_time::ptime& last_ca = viduid_lasttime[vu];
+				if ((ca - last_ca).total_seconds() < min_time_interval) {
+					// Ignore Tweets that are too close to the previous one
+					delete op0;
+					num_filtered_out ++;
+				} else {
+					viduid_lasttime[vu] = ca;
+					new_entries.push_back(op0);
+				}
+			}
 		}
+
+		size_t num_before = _entries.size();
+		_entries = new_entries;
+
+		Cons::P(boost::format("filtered out %d (%.2f%%) tweets. Now %d tweets")
+				% num_filtered_out
+				% (100.0 * num_filtered_out / num_before)
+				% new_entries.size());
+	}
+
+	void _FilterOutSingleView() {
+		Cons::MT _("Filtering out single-view entries ...");
+
+		map<string, int> vid_cnt;
+
+		for (Op* op: _entries) {
+			const string& vid = op->obj_id;
+
+			auto it = vid_cnt.find(vid);
+			if (it == vid_cnt.end()) {
+				vid_cnt[vid] = 1;
+			} else {
+				it->second ++;
+			}
+		}
+
+		// Delete the single-view entries
+		vector<Op*> new_entries;
+		int num_filtered_out = 0;
+		for (Op* op: _entries) {
+			const string& vid = op->obj_id;
+
+			auto it = vid_cnt.find(vid);
+			if (it != vid_cnt.end() && it->second == 1) {
+				delete op;
+				num_filtered_out ++;
+			} else {
+				new_entries.push_back(op);
+			}
+		}
+
+		size_t num_before = _entries.size();
+		_entries = new_entries;
+
+		Cons::P(boost::format("filtered out %d (%.2f%%) tweets. Now %d tweets")
+				% num_filtered_out
+				% (100.0 * num_filtered_out / num_before)
+				% new_entries.size());
 	}
 
 	void Load() {
 		_LoadOps();
 		_SetCreatedAtPt();
-		//_FilterOutAds();
+		_FilterOutAds();
+		_FilterOutSingleView();
 	}
 
 	void GenNumAccessesByVideos() {

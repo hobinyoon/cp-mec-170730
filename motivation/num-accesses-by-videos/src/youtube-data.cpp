@@ -178,22 +178,31 @@ namespace YoutubeData {
 	}
 
 	void _ExploreFilterOutAds0(long min_time_interval, map<long, int>& mti_na, mutex& mti_na_lock) {
-		struct VidUid {
+		struct VidUidLoc {
 			string vid;
 			long uid;
+			double lon;
+			double lat;
 
-			VidUid(const string vid_, const long uid_)
-				: vid(vid_), uid(uid_)
+			VidUidLoc(const string vid_, const long uid_, double lon_, double lat_)
+				: vid(vid_), uid(uid_), lon(lon_), lat(lat_)
 			{}
 
-			bool operator < (const VidUid& r) const {
+			bool operator < (const VidUidLoc& r) const {
 				if (vid < r.vid) return true;
 				if (vid > r.vid) return false;
-				return (uid < r.uid);
+
+				if (uid < r.uid) return true;
+				if (uid > r.uid) return false;
+
+				if (lon < r.lon) return true;
+				if (lon > r.lon) return false;
+
+				return (lat < r.lat);
 			}
 		};
 
-		map<VidUid, boost::posix_time::ptime> viduid_lasttime;
+		map<VidUidLoc, boost::posix_time::ptime> viduid_lasttime;
 
 		int num_filtered_out = 0;
 
@@ -203,19 +212,19 @@ namespace YoutubeData {
 			long uid = op->uid;
 			const boost::posix_time::ptime& ca = op->created_at_pt;
 
-			VidUid vu(vid, uid);
-			auto it = viduid_lasttime.find(vu);
+			VidUidLoc k(vid, uid, op->lon, op->lat);
+			auto it = viduid_lasttime.find(k);
 			if (it == viduid_lasttime.end()) {
-				viduid_lasttime[vu] = ca;
+				viduid_lasttime[k] = ca;
 			} else {
-				const boost::posix_time::ptime& last_ca = viduid_lasttime[vu];
+				const boost::posix_time::ptime& last_ca = viduid_lasttime[k];
 				if ((ca - last_ca).total_seconds() < min_time_interval) {
 					// Ignore Tweets that are too close to the previous one
 					// We can't delete the pointer. It is explored in parallel.
 					// delete op0;
 					num_filtered_out ++;
 				} else {
-					viduid_lasttime[vu] = ca;
+					viduid_lasttime[k] = ca;
 				}
 			}
 		}
@@ -236,7 +245,7 @@ namespace YoutubeData {
 		mutex mti_na_lock;
 
 		vector<thread*> threads;
-		for (int i = 1; i <= 9; i ++) {
+		for (int i = 0; i <= 9; i ++) {
 			long min_time_interval = long(pow(2, i) * 3600);
 			thread* t = new thread(_ExploreFilterOutAds0, min_time_interval, ref(mti_na), ref(mti_na_lock));
 			threads.push_back(t);

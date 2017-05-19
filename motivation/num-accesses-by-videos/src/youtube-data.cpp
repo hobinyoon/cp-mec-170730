@@ -1,4 +1,5 @@
 #include <fstream>
+#include <mutex>
 #include <thread>
 
 #include <boost/algorithm/string.hpp>
@@ -106,8 +107,10 @@ namespace YoutubeData {
 				threads.push_back(t);
 			}
 
-			for (auto t: threads)
+			for (auto t: threads) {
 				t->join();
+				delete t;
+			}
 		} else {
 			for (Op* op: _entries)
 				op->SetCreatedAtPt();
@@ -118,8 +121,8 @@ namespace YoutubeData {
 	void _FilterOutAds() {
 		Cons::MT _("Filtering out ads ...");
 
-		// At most 1 Tweet per video per person in a week.
-		const long min_time_interval = 7 * 24 * 3600;
+		// At most 1 Tweet per video per person in 3 days.
+		const long min_time_interval = 3 * 24 * 3600;
 
 		struct VidUid {
 			string vid;
@@ -174,6 +177,86 @@ namespace YoutubeData {
 				% new_entries.size());
 	}
 
+	void _ExploreFilterOutAds0(long min_time_interval, map<long, int>& mti_na, mutex& mti_na_lock) {
+		struct VidUid {
+			string vid;
+			long uid;
+
+			VidUid(const string vid_, const long uid_)
+				: vid(vid_), uid(uid_)
+			{}
+
+			bool operator < (const VidUid& r) const {
+				if (vid < r.vid) return true;
+				if (vid > r.vid) return false;
+				return (uid < r.uid);
+			}
+		};
+
+		map<VidUid, boost::posix_time::ptime> viduid_lasttime;
+
+		int num_filtered_out = 0;
+
+		for (Op* op0: _entries) {
+			OpYoutube* op = static_cast<OpYoutube*>(op0);
+			const string& vid = op->obj_id;
+			long uid = op->uid;
+			const boost::posix_time::ptime& ca = op->created_at_pt;
+
+			VidUid vu(vid, uid);
+			auto it = viduid_lasttime.find(vu);
+			if (it == viduid_lasttime.end()) {
+				viduid_lasttime[vu] = ca;
+			} else {
+				const boost::posix_time::ptime& last_ca = viduid_lasttime[vu];
+				if ((ca - last_ca).total_seconds() < min_time_interval) {
+					// Ignore Tweets that are too close to the previous one
+					// We can't delete the pointer. It is explored in parallel.
+					// delete op0;
+					num_filtered_out ++;
+				} else {
+					viduid_lasttime[vu] = ca;
+				}
+			}
+		}
+
+		{
+			lock_guard<mutex> _(mti_na_lock);
+			mti_na[min_time_interval] = num_filtered_out;
+		}
+	}
+
+	void _ExploreFilterOutAds() {
+		Cons::MT _("Exploring filter-out-ads parameter ...");
+
+		size_t num_before = _entries.size();
+
+		// map<min_time_interval, num_after>
+		map<long, int> mti_na;
+		mutex mti_na_lock;
+
+		vector<thread*> threads;
+		for (int i = 1; i <= 9; i ++) {
+			long min_time_interval = long(pow(2, i) * 3600);
+			thread* t = new thread(_ExploreFilterOutAds0, min_time_interval, ref(mti_na), ref(mti_na_lock));
+			threads.push_back(t);
+		}
+
+		for (auto t: threads) {
+			t->join();
+			delete t;
+		}
+
+		for (auto it: mti_na) {
+			Cons::P(boost::format("min_time_interval=%3d(h) filtered out %d (%.2f%%)")
+					% (it.first / 3600)
+					% it.second
+					% (100.0 * it.second / num_before)
+					);
+		}
+	}
+
+
 	void _FilterOutSingleView() {
 		Cons::MT _("Filtering out single-view entries ...");
 
@@ -217,8 +300,9 @@ namespace YoutubeData {
 	void Load() {
 		_LoadOps();
 		_SetCreatedAtPt();
-		_FilterOutAds();
-		_FilterOutSingleView();
+		//_FilterOutAds();
+		_ExploreFilterOutAds();
+		//_FilterOutSingleView();
 	}
 
 	void GenNumAccessesByVideos() {

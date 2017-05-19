@@ -9,6 +9,7 @@
 #include "conf.h"
 #include "cons.h"
 #include "op-youtube.h"
+#include "stat.h"
 #include "util.h"
 #include "youtube-data.h"
 
@@ -23,7 +24,7 @@ namespace YoutubeData {
 	}
 
 	void _LoadOps() {
-		string fn = Conf::GetDir("in_file");
+		string fn = Conf::GetFn("in_file");
 		string dn = boost::filesystem::path(fn).parent_path().string();
 		string fn1 = boost::filesystem::path(fn).filename().string();
 
@@ -117,203 +118,55 @@ namespace YoutubeData {
 		}
 	}
 
-	// Filter out excessive Tweets with the same video from the same person in a short period of time.
-	void _FilterOutAds() {
-		Cons::MT _("Filtering out ads ...");
 
-		// At most 1 Tweet per video per person in 3 days.
-		const long min_time_interval = 3 * 24 * 3600;
-
-		struct VidUid {
-			string vid;
-			long uid;
-
-			VidUid(const string vid_, const long uid_)
-				: vid(vid_), uid(uid_)
-			{}
-
-			bool operator < (const VidUid& r) const {
-				if (vid < r.vid) return true;
-				if (vid > r.vid) return false;
-				return (uid < r.uid);
-			}
-		};
-
-		map<VidUid, boost::posix_time::ptime> viduid_lasttime;
-
-		vector<Op*> new_entries;
-		int num_filtered_out = 0;
-
-		for (Op* op0: _entries) {
-			OpYoutube* op = static_cast<OpYoutube*>(op0);
-			const string& vid = op->obj_id;
-			long uid = op->uid;
-			const boost::posix_time::ptime& ca = op->created_at_pt;
-
-			VidUid vu(vid, uid);
-			auto it = viduid_lasttime.find(vu);
-			if (it == viduid_lasttime.end()) {
-				viduid_lasttime[vu] = ca;
-				new_entries.push_back(op0);
-			} else {
-				const boost::posix_time::ptime& last_ca = viduid_lasttime[vu];
-				if ((ca - last_ca).total_seconds() < min_time_interval) {
-					// Ignore Tweets that are too close to the previous one
-					delete op0;
-					num_filtered_out ++;
-				} else {
-					viduid_lasttime[vu] = ca;
-					new_entries.push_back(op0);
-				}
-			}
-		}
-
-		size_t num_before = _entries.size();
-		_entries = new_entries;
-
-		Cons::P(boost::format("filtered out %d (%.2f%%) tweets. Now %d tweets")
-				% num_filtered_out
-				% (100.0 * num_filtered_out / num_before)
-				% new_entries.size());
+	void Load() {
+		_LoadOps();
+		//_SetCreatedAtPt();
 	}
 
-	void _ExploreFilterOutAds0(long min_time_interval, map<long, int>& mti_na, mutex& mti_na_lock) {
-		struct VidUidLoc {
-			string vid;
-			long uid;
-			double lon;
-			double lat;
-
-			VidUidLoc(const string vid_, const long uid_, double lon_, double lat_)
-				: vid(vid_), uid(uid_), lon(lon_), lat(lat_)
-			{}
-
-			bool operator < (const VidUidLoc& r) const {
-				if (vid < r.vid) return true;
-				if (vid > r.vid) return false;
-
-				if (uid < r.uid) return true;
-				if (uid > r.uid) return false;
-
-				if (lon < r.lon) return true;
-				if (lon > r.lon) return false;
-
-				return (lat < r.lat);
-			}
-		};
-
-		map<VidUidLoc, boost::posix_time::ptime> viduid_lasttime;
-
-		int num_filtered_out = 0;
-
-		for (Op* op0: _entries) {
-			OpYoutube* op = static_cast<OpYoutube*>(op0);
-			const string& vid = op->obj_id;
-			long uid = op->uid;
-			const boost::posix_time::ptime& ca = op->created_at_pt;
-
-			VidUidLoc k(vid, uid, op->lon, op->lat);
-			auto it = viduid_lasttime.find(k);
-			if (it == viduid_lasttime.end()) {
-				viduid_lasttime[k] = ca;
-			} else {
-				const boost::posix_time::ptime& last_ca = viduid_lasttime[k];
-				if ((ca - last_ca).total_seconds() < min_time_interval) {
-					// Ignore Tweets that are too close to the previous one
-					// We can't delete the pointer. It is explored in parallel.
-					// delete op0;
-					num_filtered_out ++;
-				} else {
-					viduid_lasttime[k] = ca;
-				}
-			}
-		}
-
-		{
-			lock_guard<mutex> _(mti_na_lock);
-			mti_na[min_time_interval] = num_filtered_out;
-		}
-	}
-
-	void _ExploreFilterOutAds() {
-		Cons::MT _("Exploring filter-out-ads parameter ...");
-
-		size_t num_before = _entries.size();
-
-		// map<min_time_interval, num_after>
-		map<long, int> mti_na;
-		mutex mti_na_lock;
-
-		vector<thread*> threads;
-		for (int i = 0; i <= 9; i ++) {
-			long min_time_interval = long(pow(2, i) * 3600);
-			thread* t = new thread(_ExploreFilterOutAds0, min_time_interval, ref(mti_na), ref(mti_na_lock));
-			threads.push_back(t);
-		}
-
-		for (auto t: threads) {
-			t->join();
-			delete t;
-		}
-
-		for (auto it: mti_na) {
-			Cons::P(boost::format("min_time_interval=%3d(h) filtered out %d (%.2f%%)")
-					% (it.first / 3600)
-					% it.second
-					% (100.0 * it.second / num_before)
-					);
-		}
-	}
-
-
-	void _FilterOutSingleView() {
-		Cons::MT _("Filtering out single-view entries ...");
+	void GenNumAccessesByVideos() {
+		Cons::MT _("Gen num accesses stat by videos ...");
 
 		map<string, int> vid_cnt;
-
-		for (Op* op: _entries) {
+		for (const Op* op: _entries) {
 			const string& vid = op->obj_id;
 
 			auto it = vid_cnt.find(vid);
 			if (it == vid_cnt.end()) {
 				vid_cnt[vid] = 1;
 			} else {
-				it->second ++;
+				(it->second) ++;
 			}
 		}
 
-		// Delete the single-view entries
-		vector<Op*> new_entries;
-		int num_filtered_out = 0;
-		for (Op* op: _entries) {
-			const string& vid = op->obj_id;
+		vector<int> cnts;
+		for (auto it: vid_cnt)
+			cnts.push_back(it.second);
+		sort(cnts.begin(), cnts.end());
 
-			auto it = vid_cnt.find(vid);
-			if (it != vid_cnt.end() && it->second == 1) {
-				delete op;
-				num_filtered_out ++;
-			} else {
-				new_entries.push_back(op);
+		const string fn = Conf::GetFn("out_file");
+		ofstream ofs(fn);
+		if (! ofs.is_open())
+			THROW(boost::format("unable to open file %1%") % fn);
+		string fmt = "%6d %4d";
+		ofs << Util::BuildHeader(fmt, "video_rank num_accesses") << "\n";
+		int i = 0;
+		int prev_c = -1;
+		int c = 0;
+		for (auto it = cnts.rbegin(); it != cnts.rend(); ++ it) {
+			i ++;
+			c = *it;
+			if (prev_c != c) {
+				ofs << boost::format(fmt + "\n") % i % c;
+				prev_c = c;
 			}
 		}
-
-		size_t num_before = _entries.size();
-		_entries = new_entries;
-
-		Cons::P(boost::format("filtered out %d (%.2f%%) tweets. Now %d tweets")
-				% num_filtered_out
-				% (100.0 * num_filtered_out / num_before)
-				% new_entries.size());
+		ofs << boost::format(fmt + "\n") % i % c;
+		ofs.close();
+		Cons::P(boost::format("Created %s %d") % fn % boost::filesystem::file_size(fn));
 	}
 
-	void Load() {
-		_LoadOps();
-		_SetCreatedAtPt();
-		//_FilterOutAds();
-		_ExploreFilterOutAds();
-		//_FilterOutSingleView();
-	}
-
+#if 0
 	void GenNumAccessesByVideos() {
 		Cons::MT _("Gen num accesses stat by videos ...");
 
@@ -350,14 +203,47 @@ namespace YoutubeData {
 			vec_vid_cnt.push_back(VidCnt(it.first, it.second));
 		sort(vec_vid_cnt.begin(), vec_vid_cnt.end());
 
-		int i = 0;
-		for (auto it = vec_vid_cnt.rbegin(); it != vec_vid_cnt.rend(); ++ it) {
-			Cons::P(boost::format("%s %4d") % it->vid % it->cnt);
+		const string fn = Conf::GetFn("out_file");
+		ofstream ofs(fn);
+		if (! ofs.is_open())
+			THROW(boost::format("unable to open file %1%") % fn);
+		for (auto it = vec_vid_cnt.rbegin(); it != vec_vid_cnt.rend(); ++ it)
+			ofs << boost::format("%s %4d\n") % it->vid % it->cnt;
+		ofs.close();
+		Cons::P(boost::format("Created %s %d") % fn % boost::filesystem::file_size(fn));
+	}
+#endif
 
-			i ++;
-			if (i == 10)
-				break;
+	void GenNumAccessesByVideosCdf() {
+		Cons::MT _("Gen num accesses stat by videos CDF ...");
+
+		map<string, int> vid_cnt;
+		for (const Op* op: _entries) {
+			const string& vid = op->obj_id;
+
+			auto it = vid_cnt.find(vid);
+			if (it == vid_cnt.end()) {
+				vid_cnt[vid] = 1;
+			} else {
+				(it->second) ++;
+			}
 		}
+
+		vector<int> cnts;
+		for (auto it: vid_cnt)
+			cnts.push_back(it.second);
+		sort(cnts.begin(), cnts.end());
+
+		Stat::Gen<int>(cnts, Conf::GetFn("out_file"));
+
+		//const string fn = Conf::GetFn("out_file");
+		//ofstream ofs(fn);
+		//if (! ofs.is_open())
+		//	THROW(boost::format("unable to open file %1%") % fn);
+		//for (auto it = cnts.rbegin(); it != cnts.rend(); ++ it)
+		//	ofs << boost::format("%s %4d\n") % it->vid % it->cnt;
+		//ofs.close();
+		//Cons::P(boost::format("Created %s %d") % fn % boost::filesystem::file_size(fn));
 	}
 
 	void FreeMem() {

@@ -16,8 +16,8 @@ namespace Conf {
 	void _ParseArgs(int argc, char* argv[]) {
 		po::options_description od("Allowed options");
 		od.add_options()
-			("in_file", po::value<string>()->default_value("~/work/castnet-data/youtube/150505-104600-tweets-6mo"), "Input file name")
-			("out_file", po::value<string>()->default_value(".result/output"), "Output file name")
+			("in_file", po::value<string>()->default_value("~/work/castnet-data/youtube/150505-104600-tweets-6mo-noads-109950"), "Input file name")
+			("out_file", po::value<string>()->default_value(".result/num-accesses-by-videos"), "Output file name")
 			("help", "show help message")
 			;
 
@@ -46,7 +46,7 @@ namespace Conf {
 		_ParseArgs(argc, argv);
 	}
 
-	const string GetDir(const string& k) {
+	const string GetFn(const string& k) {
 		// Use boost::regex. C++11 regex works from 4.9. Ubuntu 14.04 has g++ 4.8.4.
 		//   http://stackoverflow.com/questions/8060025/is-this-c11-regex-error-me-or-the-compiler
 		return boost::regex_replace(

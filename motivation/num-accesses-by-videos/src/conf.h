@@ -21,5 +21,5 @@ namespace Conf {
 		return it->second.as<T>();
 	}
 
-	const std::string GetDir(const std::string& k);
+	const std::string GetFn(const std::string& k);
 };

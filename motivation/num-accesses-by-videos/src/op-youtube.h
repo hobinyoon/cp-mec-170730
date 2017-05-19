@@ -8,8 +8,7 @@ struct OpYoutube : public Op {
 	// Not loading fields that are not used in this simulation to save memory and time.
 	//
 	//long id;	// tweet id
-	//long uid;
-	//std::string created_at_str;
+	long uid;
 	// Op::obj_id is youtube_video_id
 	//long youtube_video_uploader;
 	//std::vector<std::string> topics;

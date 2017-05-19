@@ -10,11 +10,10 @@ OpYoutube::OpYoutube(ifstream& ifs) {
 	//ifs.read((char*)&id, sizeof(id));
 	ifs.seekg(sizeof(long), ifs.cur);
 
-	//ifs.read((char*)&uid, sizeof(uid));
-	ifs.seekg(sizeof(long), ifs.cur);
+	ifs.read((char*)&uid, sizeof(uid));
 
 	Util::ReadStr(ifs, created_at);
-	//created_at = boost::posix_time::time_from_string(created_at_str);
+	//created_at_pt = boost::posix_time::time_from_string(created_at);
 
 	ifs.read((char*)&lat, sizeof(lat));
 	ifs.read((char*)&lon, sizeof(lon));

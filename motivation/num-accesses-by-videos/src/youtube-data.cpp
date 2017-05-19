@@ -1,4 +1,5 @@
 #include <fstream>
+#include <thread>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
@@ -80,8 +81,68 @@ namespace YoutubeData {
 				);
 	}
 
+	void _SetCreatedAtPt0(int start, int end) {
+		//Cons::P(boost::format("%d %d") % start % end);
+		for (int i = start; i < end; i ++) {
+			Op* op = _entries[i];
+			op->SetCreatedAtPt();
+		}
+	}
+
+	void _SetCreatedAtPt() {
+		Cons::MT _("Setting created_at_pt ...");
+		bool parallel = true;
+
+		if (parallel) {
+			int num_cpus = std::thread::hardware_concurrency();
+			int s = _entries.size();
+			int num_items = int(ceil(float(s) / num_cpus));
+
+			vector<thread*> threads;
+			for (int i = 0; i < num_cpus; i ++) {
+				int start = i * num_items;
+				int end = std::min((i + 1) * num_items, s);
+
+				thread* t = new thread(_SetCreatedAtPt0, start, end);
+				threads.push_back(t);
+			}
+
+			for (auto t: threads)
+				t->join();
+		} else {
+			for (Op* op: _entries)
+				op->SetCreatedAtPt();
+		}
+	}
+
+	void _FilterOutAds() {
+		Cons::MT _("Filtering out ads ...");
+		// TODO: Filter out excessive Tweets with the same video from the same person in a short period of time.
+
+		// At most 1 Tweet per video per person in a week.
+		//const long time_interval = 7 * 24 * 3600;
+
+		for (const Op* op: _entries) {
+			//const string& vid = op->obj_id;
+
+			// TODO: check the format and see if you need it in posix_time format.
+			// TODO: parallel conversion
+			Cons::P(op->created_at);
+			exit(0);
+
+			//auto it = vid_cnt.find(vid);
+			//if (it == vid_cnt.end()) {
+			//	vid_cnt[vid] = 1;
+			//} else {
+			//	(it->second) ++;
+			//}
+		}
+	}
+
 	void Load() {
 		_LoadOps();
+		_SetCreatedAtPt();
+		//_FilterOutAds();
 	}
 
 	void GenNumAccessesByVideos() {

@@ -34,6 +34,12 @@ namespace Conf {
 			cout << od << "\n";
 			exit(0);
 		}
+
+		// Print all parameters
+		Cons::P("Options:");
+		for (const auto o: _vm) {
+			Cons::P(boost::format("  %s=%s") % o.first % o.second.as<string>());
+		}
 	}
 
 	void Init(int argc, char* argv[]) {

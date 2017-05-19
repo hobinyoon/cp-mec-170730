@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <string>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 struct Op {
 	enum Type {
@@ -14,14 +15,17 @@ struct Op {
 	double lat;
 	double lon;
 	std::string obj_id;
-	//boost::posix_time::ptime created_at;
+
+	// 2013-11-01 00:03:09
 	std::string created_at;
+	boost::posix_time::ptime created_at_pt;
 
 	size_t size;
-
 	char in_usa;
 
 	virtual ~Op();
+
+	void SetCreatedAtPt();
 
 	virtual std::string to_string() const = 0;
 };

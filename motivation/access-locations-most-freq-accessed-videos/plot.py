@@ -42,12 +42,12 @@ def main(argv):
 		env = os.environ.copy()
 		env["IN_FNS"] = " ".join(_in_fns)
 		env["IN_DN"] = _dn_acc_loc
-		env["VIDS"] = " ".join(vids)
+		env["VIDS"] = " ".join(vids).replace("_", "\\_")
 		env["VIEW_CNTS"] = " ".join(view_cnts)
 		env["NUM_TWEETS"] = " ".join(num_tweets)
 		for i in range(len(titles)):
 			# Limit the title to 80 chars
-			env["TITLE%d" % (i+1)] = titles[i][0:80]
+			env["TITLE%d" % (i+1)] = titles[i][0:80].replace("_", "\\_")
 		env["OUT_FN"] = fn_out
 		Util.RunSubp("gnuplot %s/loc.gnuplot" % os.path.dirname(__file__), env=env)
 		Cons.P("Created %s %d" % (fn_out, os.path.getsize(fn_out)))

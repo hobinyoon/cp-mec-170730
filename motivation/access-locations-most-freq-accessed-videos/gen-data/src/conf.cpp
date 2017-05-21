@@ -16,7 +16,7 @@ namespace Conf {
 	void _ParseArgs(int argc, char* argv[]) {
 		po::options_description od("Allowed options");
 		od.add_options()
-			("in_file", po::value<string>()->default_value("~/work/castnet-data/youtube/150812-143151-tweets-5667779-noads-3837612"), "Input file name")
+			("in_file", po::value<string>()->default_value("~/work/castnet-data/youtube/150812-143151-tweets-5667779-noads-3837612-nolowviewcnts-inusa-118386"), "Input file name")
 			("out_dn", po::value<string>()->default_value(".result/acc-locs"), "Output directory name")
 			("help", "show help message")
 			;

@@ -36,10 +36,16 @@ def main(argv):
 	dn_out = "%s/.result" % os.path.dirname(__file__)
 	Util.MkDirs(dn_out)
 
-	fn_out = "%s/youtube-video-acc-locs.pdf" % dn_out
+	mostpopular_small = True
+	fn_out = None
+	if mostpopular_small:
+		fn_out = "%s/youtube-video-acc-locs-mostpopular-small.pdf" % dn_out
+	else:
+		fn_out = "%s/youtube-video-acc-locs.pdf" % dn_out
 
 	with Cons.MT("Plotting YouTube video access locations ..."):
 		env = os.environ.copy()
+		env["PLOT_MOSTPOPULAR_SMALL"] = ("1" if mostpopular_small else "0")
 		env["IN_FNS"] = " ".join(_in_fns)
 		env["IN_DN"] = _dn_acc_loc
 		env["VIDS"] = " ".join(vids).replace("_", "\\_")

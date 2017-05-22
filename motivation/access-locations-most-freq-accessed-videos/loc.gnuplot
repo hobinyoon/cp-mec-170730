@@ -1,5 +1,8 @@
 #! /usr/bin/gnuplot
 
+# Plot most popular one only. For paper.
+PLOT_MOSTPOPULAR_SMALL = system("echo $PLOT_MOSTPOPULAR_SMALL") + 0
+
 IN_FNS = system("echo $IN_FNS")
 IN_DN = system("echo $IN_DN")
 VIDS = system("echo $VIDS")
@@ -8,13 +11,18 @@ NUM_TWEETS = system("echo $NUM_TWEETS")
 OUT_FN = system("echo $OUT_FN")
 
 set print "-"
+#print sprintf("PLOT_MOSTPOPULAR_SMALL=%d", PLOT_MOSTPOPULAR_SMALL)
 #print sprintf("OUT_FN=%s", OUT_FN)
 
-term_width=3.0
+if (PLOT_MOSTPOPULAR_SMALL) {
+	term_width=2.5
+} else {
+	term_width=3.0
+	set tmargin screen 0.92
+}
 set terminal pdfcairo enhanced size term_width in, (term_width*0.8) in
 set output OUT_FN
 
-set tmargin screen 0.92
 
 # range_type
 # 0: World
@@ -22,18 +30,24 @@ set tmargin screen 0.92
 # 2: New York
 rt=1
 
+# Tick text color
+if (PLOT_MOSTPOPULAR_SMALL) {
+	TTC = "#808080"
+} else {
+	TTC = "black"
+}
 
 if (rt == 0) {
-	set xtics nomirror tc rgb "black" autofreq -180,60
-	set ytics nomirror tc rgb "black" autofreq -90,30
+	set xtics nomirror tc rgb TTC autofreq -180,60
+	set ytics nomirror tc rgb TTC autofreq -90,30
 	MAP = "~/work/crawl-twitter/worldmap/world_110m.txt"
 } else { if (rt == 1) {
-	set xtics nomirror tc rgb "black" autofreq -180,10
-	set ytics nomirror tc rgb "black" autofreq -90,5
+	set xtics nomirror tc rgb TTC autofreq -180,10
+	set ytics nomirror tc rgb TTC autofreq -90,5
 	MAP = "~/work/castnet/misc/us-states-map/usa.txt"
 } else { if (rt == 2) {
-	set xtics nomirror tc rgb "black" autofreq -180,1
-	set ytics nomirror tc rgb "black" autofreq -90,1
+	set xtics nomirror tc rgb TTC autofreq -180,1
+	set ytics nomirror tc rgb TTC autofreq -90,1
 	MAP = "~/work/castnet/misc/us-states-map/usa.txt"
 } } }
 
@@ -53,13 +67,24 @@ if (rt == 0) {
 	set yrange[40:41.5]
 } } }
 
-do for [i=1:words(IN_FNS)] {
+if (PLOT_MOSTPOPULAR_SMALL) {
+	num_plots = 1
+} else {
+	num_plots = words(IN_FNS)
+}
+
+do for [i=1:num_plots] {
 	vid = word(VIDS, i)
 	view_cnt = word(VIEW_CNTS, i)
 	num_tweets = word(NUM_TWEETS, i)
 	vtitle = system("echo $TITLE".i)
 
-	set title view_cnt . " " . num_tweets . " " . vid . "\n" . vtitle font ",6" offset 0,-1.5
+	if (PLOT_MOSTPOPULAR_SMALL) {
+		PS=0.10
+	} else {
+		set title view_cnt . " " . num_tweets . " " . vid . "\n" . vtitle font ",6" offset 0,-1.5
+		PS=0.006
+	}
 
 	fn = IN_DN . "/" . word(IN_FNS, i)
 
@@ -69,7 +94,7 @@ do for [i=1:words(IN_FNS)] {
 	} else { if (rt >= 1) {
 		plot MAP u 2:1 with filledcurves lw 1 fs solid noborder fc rgb "#F0F0F0" not, \
 			MAP u 2:1 with l lw 1 lc rgb "#E0E0E0" not, \
-			fn u 1:2 w p pt 6 pointsize 0.006 lc rgb "red" not
+			fn u 1:2 w p pt 7 pointsize PS lc rgb "red" not
 	} }
 
 	print sprintf("%d", i)

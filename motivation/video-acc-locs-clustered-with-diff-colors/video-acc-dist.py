@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import math
 import os
 import pprint
 import sys
@@ -82,7 +83,7 @@ def ClusterPoints():
 		Cons.P("Biggest PointCluster has %d points" % max_size)
 
 		# TODO: coloring
-		# TODO: print all points
+		# TODO: print all points, not only centers
 
 		with open(_fn_pnt_clustered, "w") as fo:
 			fo.write("# lat lon num_points_clustered\n")
@@ -352,14 +353,32 @@ class PointCluster:
 		return "%d %s %d" % (len(self.points), self.center, self.id_)
 
 	def Merge(self, pc):
-		# Weighted centers
-		wc0 = (self.center[0] * len(self.points), self.center[1] * len(self.points))
-		wc1 = (pc.center[0] * len(pc.points), pc.center[1] * len(pc.points))
+		if True:
+			# (Similar) to geographic median
+			self.points.extend(pc.points)
+			x = []
+			y = []
+			for p in self.points:
+				x.append(p[0])
+				y.append(p[1])
+			x.sort()
+			y.sort()
+			if len(x) % 2 == 0:
+				i0 = len(x) / 2 - 1
+				i1 = i0 + 1
+				self.center = ((x[i0] + x[i1]) / 2.0, (y[i0] + y[i1]) / 2.0)
+			else:
+				i = int(math.floor(len(x) / 2))
+				self.center = (x[i], y[i])
+		else:
+			# Geographic mean
 
-		new_l = len(self.points) + len(pc.points)
-
-		self.center = ((wc0[0] + wc1[0]) / new_l, (wc0[1] + wc1[1]) / new_l)
-		self.points.extend(pc.points)
+			# Weighted centers
+			wc0 = (self.center[0] * len(self.points), self.center[1] * len(self.points))
+			wc1 = (pc.center[0] * len(pc.points), pc.center[1] * len(pc.points))
+			new_l = len(self.points) + len(pc.points)
+			self.center = ((wc0[0] + wc1[0]) / new_l, (wc0[1] + wc1[1]) / new_l)
+			self.points.extend(pc.points)
 
 
 #class PointCluster:

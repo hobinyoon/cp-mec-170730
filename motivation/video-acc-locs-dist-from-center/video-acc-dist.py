@@ -108,9 +108,7 @@ def GetDistCdfFile():
 # @sa http://en.wikipedia.org/wiki/Law_of_haversines
 #
 # PI/180
-_DEG_TO_RAD = math.pi / 2.0
-# Earth's quatratic mean radius for WGS-84
-_EARTH_RADIUS_IN_METERS = 6372797.560856;
+_DEG_TO_RAD = math.pi / 180.0
 def ArcInRadians(lon0, lat0, lon1, lat1):
 	latitudeArc  = (lat0 - lat1) * _DEG_TO_RAD;
 	longitudeArc = (lon0 - lon1) * _DEG_TO_RAD;
@@ -121,6 +119,8 @@ def ArcInRadians(lon0, lat0, lon1, lat1):
 	tmp = math.cos(lat0 * _DEG_TO_RAD) * math.cos(lat1 * _DEG_TO_RAD);
 	return 2.0 * math.asin(math.sqrt(latitudeH + tmp*lontitudeH));
 
+# Earth's quatratic mean radius for WGS-84
+_EARTH_RADIUS_IN_METERS = 6372797.560856;
 def ArcInMeters(lon0, lat0, lon1, lat1):
 	return _EARTH_RADIUS_IN_METERS * ArcInRadians(lon0, lat0, lon1, lat1);
 

@@ -11,6 +11,8 @@ sys.path.insert(0, "%s/work/mutant/ec2-tools/lib/util" % os.path.expanduser("~")
 import Cons
 import Util
 
+import Stat
+
 _fn_in0 = "001-Y4MnpzG5Sqc"
 # TODO: what is this in km or mile?
 # The clustering assumes a flat earth for a quick insight
@@ -22,6 +24,7 @@ _fn_in_pnts = "%s/%s" % (_dn_in, _fn_in0)
 _dn_result = "%s/.result" % os.path.dirname(__file__)
 _fn_pnt_clustered = "%s/%s-clustered" % (_dn_result, _fn_in0)
 _fn_pnt_clustered_centers = "%s/%s-clustered-centers" % (_dn_result, _fn_in0)
+_fn_dist_cdf = "%s/%s-dist-cdf" % (_dn_result, _fn_in0)
 
 
 def main(argv):
@@ -108,6 +111,13 @@ def ClusterPoints():
 				for p in pc.points:
 					fo.write((fmt + "\n") % (p[0], p[1], pc.id_))
 		Cons.P("Created %s %d" % (_fn_pnt_clustered, os.path.getsize(_fn_pnt_clustered)))
+
+	with Cons.MT("Generating dist stat ..."):
+		dist = []
+		for pc in pcs:
+			for p in pc.points:
+				dist.append(ArcInMeters(pc.center[0], pc.center[1], p[0], p[1]))
+		Stat.GenStat(dist, _fn_dist_cdf)
 
 
 # https://www.ics.uci.edu/~eppstein/161/python/closestpair.py
@@ -224,6 +234,42 @@ def PlotClustered():
 		env["FN_OUT"] = fn_out
 		Util.RunSubp("gnuplot %s/access-loc-with-centroids.gnuplot" % os.path.dirname(__file__), env=env, measure_time=True)
 		Cons.P("Created %s %d" % (fn_out, os.path.getsize(fn_out)))
+
+
+# http://en.wikipedia.org/wiki/Haversine_formula
+# http://blog.julien.cayzac.name/2008/10/arc-and-distance-between-two-points-on.html
+#
+#  @brief Computes the arc, in radian, between two WGS-84 positions.
+#
+# The result is equal to <code>Distance(from,to)/EARTH_RADIUS_IN_METERS</code>
+#    <code>= 2*asin(sqrt(h(d/EARTH_RADIUS_IN_METERS )))</code>
+#
+# where:<ul>
+#    <li>d is the distance in meters between 'from' and 'to' positions.</li>
+#    <li>h is the haversine function: <code>h(x)=sin^2(x/2)</code></li>
+# </ul>
+#
+# The haversine formula gives:
+#    <code>h(d/R) = h(from.lat-to.lat)+h(from.lon-to.lon)+cos(from.lat)*cos(to.lat)</code>
+#
+# @sa http://en.wikipedia.org/wiki/Law_of_haversines
+#
+# PI/180
+_DEG_TO_RAD = math.pi / 2.0
+# Earth's quatratic mean radius for WGS-84
+_EARTH_RADIUS_IN_METERS = 6372797.560856;
+def ArcInRadians(lon0, lat0, lon1, lat1):
+	latitudeArc  = (lat0 - lat1) * _DEG_TO_RAD;
+	longitudeArc = (lon0 - lon1) * _DEG_TO_RAD;
+	latitudeH = math.sin(latitudeArc * 0.5);
+	latitudeH *= latitudeH;
+	lontitudeH = math.sin(longitudeArc * 0.5);
+	lontitudeH *= lontitudeH;
+	tmp = math.cos(lat0 * _DEG_TO_RAD) * math.cos(lat1 * _DEG_TO_RAD);
+	return 2.0 * math.asin(math.sqrt(latitudeH + tmp*lontitudeH));
+
+def ArcInMeters(lon0, lat0, lon1, lat1):
+	return _EARTH_RADIUS_IN_METERS * ArcInRadians(lon0, lat0, lon1, lat1);
 
 
 if __name__ == "__main__":

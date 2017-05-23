@@ -11,10 +11,8 @@ sys.path.insert(0, "%s/work/mutant/ec2-tools/lib/util" % os.path.expanduser("~")
 import Cons
 import Util
 
-import Stat
 
 _fn_in0 = "001-Y4MnpzG5Sqc"
-# TODO: what is this in km or mile?
 # The clustering assumes a flat earth for a quick insight
 _clustering_dist_sq_threshold = 1.0
 
@@ -111,13 +109,6 @@ def ClusterPoints():
 				for p in pc.points:
 					fo.write((fmt + "\n") % (p[0], p[1], pc.id_))
 		Cons.P("Created %s %d" % (_fn_pnt_clustered, os.path.getsize(_fn_pnt_clustered)))
-
-	with Cons.MT("Generating dist stat ..."):
-		dist = []
-		for pc in pcs:
-			for p in pc.points:
-				dist.append(ArcInMeters(pc.center[0], pc.center[1], p[0], p[1]))
-		Stat.GenStat(dist, _fn_dist_cdf)
 
 
 # https://www.ics.uci.edu/~eppstein/161/python/closestpair.py

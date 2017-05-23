@@ -29,23 +29,14 @@ set nokey
 
 set palette model RGB defined (\
   0 "#0000FF" \
-, 1 "#8A2BE2" \
+, 1 "#FF0000" \
 , 2 "#A52A2A" \
-, 3 "#5F9EA0" \
-, 4 "#008B8B" \
-, 5 "#006400" \
-, 6 "#483D8B" \
-, 7 "#DAA520" \
+, 3 "#006400" \
+, 4 "#800000" \
+, 5 "#000000" \
 )
 
 # https://www2.uni-hamburg.de/Wiss/FB/15/Sustainability/schneider/gnuplot/colors.htm
-# blueviolet    "#8A2BE2"
-# brown         "#A52A2A"
-# cadetblue     "#5F9EA0"
-# darkcyan      "#008B8B"
-# darkgreen     "#006400"
-# darkslateblue "#483D8B"
-# goldenrod     "#DAA520"
 
 unset colorbox
 
@@ -54,8 +45,12 @@ mod(a, b)=a-(floor(a/b)*b)
 plot \
 MAP u 2:1 with filledcurves lw 1 fs solid noborder fc rgb "#FCFCFC" not, \
 MAP u 2:1 with l lw 1 lc rgb "#E0E0E0" not, \
-FN_IN_PNTS_C  u 1:2:(0.25):(mod($3,8)) w circles fs transparent solid 0.3 noborder palette not, \
-FN_IN_PNTS_CC u 1:2 w p pt 1 pointsize 0.15 lc rgb "red" not, \
+FN_IN_PNTS_C  u 1:2:(0.7):(mod($3,6)) w circles fs transparent solid 0.25 noborder palette not, \
+FN_IN_PNTS_CC u 1:2 w p pt 7 pointsize 0.20 lc rgb "white" not, \
+
+#FN_IN_PNTS_CC u 1:2 w p pt 6 pointsize 0.30 lw 2 lc rgb "white" not, \
+
+#FN_IN_PNTS_CC u 1:2:(mod($4,6)) w p pt 7 pointsize 0.20 palette not, \
 
 #FN_IN_PNTS_CC u 1:2:3 w labels offset 0,-0.3 font ",5" tc rgb "blue" not
 

@@ -18,20 +18,11 @@ _dn_result = "%s/.result" % os.path.dirname(__file__)
 
 def main(argv):
 	Util.MkDirs(_dn_result)
-
-	fn_in = GetDistCdfFile()
-	fn_out = "%s.pdf" % fn_in
-
-	with Cons.MT("Plotting clustered locations ..."):
-		env = os.environ.copy()
-		env["FN_IN"] = fn_in
-		env["FN_OUT"] = fn_out
-		Util.RunSubp("gnuplot %s/dist-cdf.gnuplot" % os.path.dirname(__file__), env=env, measure_time=True)
-		Cons.P("Created %s %d" % (fn_out, os.path.getsize(fn_out)))
+	GetDistCdfFile()
 
 
 def GetDistCdfFile():
-	fn_dist_cdf = "%s/%s-dist-cdf" % (_dn_result, _fn_in0)
+	fn_dist_cdf = "%s/%s-dist-to-clustering-center-cdf" % (_dn_result, _fn_in0)
 	if os.path.exists(fn_dist_cdf):
 		return fn_dist_cdf
 

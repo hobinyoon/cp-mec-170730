@@ -35,8 +35,8 @@ def GetDistCdfFile():
 	if os.path.exists(fn_dist_cdf):
 		return fn_dist_cdf
 
-	fn_pnts = "%s/../cluster-and-plot-video-acc-locs/.result/%s-clustered" % (os.path.dirname(__file__), _fn_in0)
-	fn_pnts_c = "%s/../cluster-and-plot-video-acc-locs/.result/%s-clustered-centers" % (os.path.dirname(__file__), _fn_in0)
+	fn_pnts = "%s/../../cluster-and-plot-video-acc-locs/.result/%s-clustered" % (os.path.dirname(__file__), _fn_in0)
+	fn_pnts_c = "%s/../../cluster-and-plot-video-acc-locs/.result/%s-clustered-centers" % (os.path.dirname(__file__), _fn_in0)
 
 	if (not os.path.exists(fn_pnts)) or (not os.path.exists(fn_pnts_c)):
 		raise RuntimeError("Implement calling the other script")

@@ -18,6 +18,10 @@ namespace Conf {
 		po::options_description od("Allowed options");
 		od.add_options()
 			("usa_map", po::value<string>()->default_value("~/work/castnet/misc/us-states-map/usa.txt"))
+			("ct_loc", po::value<string>()->default_value(
+				"~/work/mec-node-placement/motivation/video-acc-locs-dist/to-closest-infra-node/gen-cell-tower-loc-data/.result/towers-ts-coord"))
+			("ap_loc", po::value<string>()->default_value("~/work/castnet-data/central-office-locations"))
+			("cdn_loc", po::value<string>()->default_value("~/work/castnet-data/netflix-cdn-locations-in-us"))
 			("video_access_loc", po::value<string>()->default_value(
 				"~/work/mec-node-placement/motivation/access-locations-most-freq-accessed-videos/gen-data/.result/acc-locs/001-Y4MnpzG5Sqc"))
 			("out_dn", po::value<string>()->default_value(str(boost::format("%s/../.result") % boost::filesystem::path(__FILE__).parent_path().string())))

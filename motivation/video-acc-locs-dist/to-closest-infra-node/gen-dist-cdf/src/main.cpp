@@ -3,8 +3,9 @@
 #include <iostream>
 #include "conf.h"
 #include "cons.h"
-#include "util.h"
 #include "infra-nodes.h"
+#include "youtube-acc-loc.h"
+#include "util.h"
 
 
 using namespace std;
@@ -21,8 +22,8 @@ int main(int argc, char* argv[]) {
 		Conf::Init(argc, argv);
 
 		InfraNodes::Load();
-		InfraNodes::GetDistFromVideoAccessLocToClosestNode();
-		//InfraNodes::GetDistFromRandPntToClosestNode();
+		YoutubeAccLoc::Load();
+		YoutubeAccLoc::CalcDistsToInfraNodes();
 	} catch (const exception& e) {
 		cerr << "Got an exception: " << e.what() << "\n";
 		return 1;

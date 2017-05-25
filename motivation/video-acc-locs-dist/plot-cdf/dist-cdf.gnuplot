@@ -9,6 +9,8 @@ STAT_CDN = system("echo $STAT_CDN")
 FN_CDN = system("echo $FN_CDN")
 FN_OUT = system("echo $FN_OUT")
 
+set print "-"
+
 set terminal pdfcairo enhanced size 2.3in, (2.3*0.85)in
 set output FN_OUT
 
@@ -58,6 +60,7 @@ do for [i=1:words(titles)] {
 		if (_y != -1) {
 			set obj circle at avg, _y size 1.2 fs solid fc rgb "blue" front
 		}
+		print sprintf("%s %f %f", title_, avg, _y)
 
 		if (title_ eq "CT") {
 			set label title_ at avg,_y right offset -1,0

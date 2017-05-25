@@ -26,7 +26,7 @@ def main(argv):
 	fn_ct = "%s/video-acc-dist-to-closest-ct-cdf" % dn1
 	fn_ap = "%s/video-acc-dist-to-closest-ap-cdf" % dn1
 	fn_cdn = "%s/video-acc-dist-to-closest-cdn-cdf" % dn1
-	fn_out = "%s/video-to-infra-node-dist.pdf" % _dn_result
+	fn_out = "%s/video-acc-dist-to-clustering-centers-infra-nodes.pdf" % _dn_result
 
 	with Cons.MT("Plotting clustered locations ..."):
 		env = os.environ.copy()

@@ -1,6 +1,8 @@
 #include <signal.h>
 #include <unistd.h>
 #include <iostream>
+#include <boost/filesystem.hpp>
+
 #include "conf.h"
 #include "cons.h"
 #include "util.h"
@@ -20,6 +22,9 @@ int main(int argc, char* argv[]) {
 		signal(SIGINT, on_signal);
 
 		Conf::Init(argc, argv);
+
+		const string dn = boost::filesystem::path(Conf::GetFn("out_file")).parent_path().string();
+		boost::filesystem::create_directories(dn);
 
 		YoutubeData::Load();
 		YoutubeData::GenNumAccessesByVideos();

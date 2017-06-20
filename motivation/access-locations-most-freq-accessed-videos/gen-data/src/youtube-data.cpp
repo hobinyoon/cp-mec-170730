@@ -155,8 +155,11 @@ namespace YoutubeData {
 				}
 			);
 
-		// Check top vids. Strange: chZmtjD8rxw has 1157 Tweets and only 5140 views.
-		// That's the only one out of the top 10 videos.
+		// Check top vids.
+		//   Big num tweets-to-real view cnt ratio.
+		//     E.g.: chZmtjD8rxw has 1157 Tweets and only 5140 views.
+		//       That was the only one out of the top 10 videos.
+		//     Must be unlisted videos
 		if (false) {
 			int i = 0;
 			for (auto it = vids.rbegin(); it != vids.rend(); ++ it) {

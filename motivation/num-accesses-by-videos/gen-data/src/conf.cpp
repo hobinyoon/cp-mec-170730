@@ -17,7 +17,7 @@ namespace Conf {
 		po::options_description od("Allowed options");
 		od.add_options()
 			("in_file", po::value<string>()->default_value(
-				"~/work/castnet-data/youtube/150812-143151-tweets-5667779-noads-3837612-nolowviewcnts-inusa-118386"), "Input file name")
+				"~/work/castnet-data/youtube/150812-143151-tweets-5667779-noads-3837612-inusa-551666"), "Input file name")
 			("out_file", po::value<string>()->default_value(".result/num-accesses-by-videos"), "Output file name")
 			("help", "show help message")
 			;

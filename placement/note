@@ -1,0 +1,79 @@
+Construct infrastructure
+  Nodes
+    CTs
+    APs
+    CDNs (data sources). Do you need this for placement? The goal is 
+  Links
+    CT -> nearest AP -> nearest CDN
+    They can be cached in each node
+
+Data access model
+  A data item access request from a user -> nearest CT -> AP -> CDN
+    AP is the AP that has the CT as a child. We construct the network such that it is the nearest.
+  So this is more about cache capacity planning. We don't do inter-AP caching.
+
+Uniform cache placement
+  It's not random. It's uniform.
+  With this placement, you get a cost and latency curve depending on the cache capacity.
+    Latency is calculated for each request by simulating the time in the links and nodes.
+    Wireless backhaul traffic is simulated from the simulation as well.
+
+What differentiate our work from the others:
+  None of the CDN node placement work considered
+    (a) the wireless backhaul traffic
+    or (b) the data access latency using the simulator with the real-world intrastructure.
+  None of the cache placement work in mobile edge computing considered cache capacity planning
+
+Cost function
+  For Greedy algorithm. We'll see how it's gonna go with the others.
+
+
+Finding a best placement
+  Using geographic mean or median
+  Find the geographic mean of all request locations
+    Using the Harversine formula
+    Map each user request locations to the nearest CT. Each CT has a number of requests then.
+  Greedy algorithm
+    Target function to minimize
+      Some call it a cost function (or model). Makes sense since you want to minimize both the latency and the traffic.
+      The sum of the weighted distances to all CTs
+        In our model, distance translates to the network distance (network latency).
+          Since we don't have a complete model of Internet, we use the linear network latency model proportional to the geographic distance.
+      Total wireless backhaul traffic
+    Do we do this per each data item or per each request?
+
+
+Random
+  Assign a data item to a randomly selected cache
+  How many copies do you want?
+
+
+Greedy
+Hot spot-based
+Clustering-based
+Weighted k-median
+Weighted k-mean
+
+
+
+
+
+Evaluation
+  Using the Castnet simulator
+
+Misc
+----
+Let's not consider the cooperative caching for now. It gets too complicated.
+
+AWS Ping Latency Check: http://cloudping.mobilfactory.co.kr/
+- pings all 11 regions. Cool!
+
+long should be good enough for latencies in us (microseconds)
+- calc "2^63 / 1000 / 1000 / 60 / 60 / 24 / 365.25"
+	~292271.02 years
+- calc "2^31 / 1000 / 1000 / 60"
+	~35.79 mins
+
+Vim
+	:mksession! ~/.vim-session-castnet-sim
+	$ vim -S ~/.vim-session-castnet-sim

@@ -10,7 +10,7 @@ import Util
 #_fn_in = "%s/work/cp-mec-data/170703-095232-tweets-97822" % os.path.expanduser("~")
 _fn_in = "%s/work/cp-mec-data/170729-104532-tweets-983810" % os.path.expanduser("~")
 
-_dist_sq_threshold = 0.02
+_dist_sq_threshold = 0.03
 _dn_plot_data = "%s/.output" % os.path.dirname(__file__)
 
 

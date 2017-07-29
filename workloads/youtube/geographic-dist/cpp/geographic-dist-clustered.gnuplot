@@ -10,7 +10,7 @@ US_STATES_MAP = "~/work/cp-mec/etc/us-states-map/usa.txt"
 set print "-"
 print sprintf("MAX_CLUSTER_SIZE=%f", MAX_CLUSTER_SIZE)
 
-set terminal pdfcairo enhanced size 3.2in, 2.3in
+set terminal pdfcairo enhanced size 3.5in, 2.3in
 set output FN_OUT
 
 set noborder
@@ -34,22 +34,23 @@ set size 0.78, 1
 
 # Curve the color and size so that the big clusters are more noticeable.
 color_1(s) = (s/MAX_CLUSTER_SIZE) ** 0.0001
-size_1(s) = 0.15 * ((s/MAX_CLUSTER_SIZE) ** 0.15)
+#size_1(s) = s == 1 ? 0.05 : 0.30 * ((s/MAX_CLUSTER_SIZE) ** 0.05)
+size_1(s) = 0.30 * ((s/MAX_CLUSTER_SIZE) ** 0.1)
 
 num_colors=1000
 set palette maxcolors num_colors
 set palette model RGB defined (\
-  0                  "blue", \
+  0                  "#B0B0FF", \
   num_colors * 1 / 3 "green", \
   num_colors * 2 / 3 "yellow", \
   num_colors         "red")
 
 set cbtics ( \
   sprintf("%.0f", MAX_CLUSTER_SIZE) color_1(MAX_CLUSTER_SIZE) \
-  ,                         "10000" color_1(10000) \
-  ,                          "1000" color_1( 1000) \
-  ,                           "100" color_1(  100) \
-  ,                            "10" color_1(   10) \
+  ,                          "10^4" color_1(10000) \
+  ,                          "10^3" color_1( 1000) \
+  ,                          "10^2" color_1(  100) \
+  ,                          "10^1" color_1(   10) \
   ,                             "1" color_1(    1) \
 )
 

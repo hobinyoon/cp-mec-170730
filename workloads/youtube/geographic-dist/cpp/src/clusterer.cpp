@@ -65,7 +65,7 @@ namespace Clusterer {
         return center;
       }
 
-      size_t Size() {
+      size_t Size() const {
         return points.size();
       }
 
@@ -113,6 +113,13 @@ namespace Clusterer {
     for (auto pc: pcs)
       max_cluster_size = max(max_cluster_size, pc.Size());
     ofs << boost::format("# max_cluster_size=%d\n") % max_cluster_size;
+
+    // Sort by the cluster size. Helps big clusters more noticeable.
+    sort(pcs.begin(), pcs.end(),
+        [](const PointCluster & a, const PointCluster & b) -> bool
+        {
+          return a.Size() < b.Size();
+        });
 
     for (auto pc: pcs) {
       const point& c = pc.Center();

@@ -1,0 +1,6 @@
+youtube_workload: ~/work/cp-mec-data/170703-095232-tweets-97822
+#youtube_workload: ~/work/cp-mec-data/170728-103709-tweets-975516
+
+# Longitude and latitude in degree
+#   sqrt(0.05) = 0.223606797749979
+dist_sum_sq_threshold: 0.05

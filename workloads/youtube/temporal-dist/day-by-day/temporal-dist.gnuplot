@@ -9,6 +9,8 @@ set print "-"
 set terminal pdfcairo enhanced size 2.3in, (2.3*0.85)in
 set output FN_OUT
 
+set rmargin screen 0.98
+
 set xdata time
 set timefmt "%Y-%m-%d"
 
@@ -26,6 +28,7 @@ set xtics nomirror tc rgb "#808080" ( \
 set ytics nomirror tc rgb "#808080" autofreq 0,1
 
 set grid xtics ytics front lc rgb "#808080"
+set border lc rgb "#808080"
 
 set xlabel "Time (month)"
 set ylabel "Number of accesses (K)" offset 1,0
@@ -34,7 +37,10 @@ set xrange ["2016-06-01":"2017-05-31"]
 set yrange [0:]
 
 plot \
-FN_IN u 1:($2/1000) w lp pt 7 ps 0.1 not
+FN_IN u 1:($2/1000) w lp pt 7 ps 0.1 not, \
+
+# Hard to explain
+#FN_IN u 1:($2/1000) w l smooth bezier lw 2 lc "blue" not
 
 # Dips on New year. Can you generalize this to holidays? Including christmas, thanks giving.
 

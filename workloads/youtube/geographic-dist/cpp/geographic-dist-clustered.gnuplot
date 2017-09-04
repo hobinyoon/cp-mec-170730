@@ -30,7 +30,13 @@ set xrange[-126:-66]
 # 34
 set yrange[22.5:50.5]
 
-set size 0.78, 1
+color_bar_relative_value = 1
+
+if (color_bar_relative_value) {
+  set size 0.85, 1
+} else {
+  set size 0.78, 1
+}
 
 # Curve the color and size so that the big clusters are more noticeable.
 color_1(s) = (s/MAX_CLUSTER_SIZE) ** 0.0001
@@ -45,17 +51,29 @@ set palette model RGB defined (\
   num_colors * 2 / 3 "yellow", \
   num_colors         "red")
 
-set cbtics ( \
-  sprintf("%.0f", MAX_CLUSTER_SIZE) color_1(MAX_CLUSTER_SIZE) \
-  ,                          "10^4" color_1(10000) \
-  ,                          "10^3" color_1( 1000) \
-  ,                          "10^2" color_1(  100) \
-  ,                          "10^1" color_1(   10) \
-  ,                             "1" color_1(    1) \
-)
+if (color_bar_relative_value) {
+  set cbtics ( \
+    "1" color_1(MAX_CLUSTER_SIZE) \
+    , "10^{-1}" color_1(MAX_CLUSTER_SIZE/10.0) \
+    , "10^{-2}" color_1(MAX_CLUSTER_SIZE/100.0) \
+    , "10^{-3}" color_1(MAX_CLUSTER_SIZE/1000.0) \
+    , "10^{-4}" color_1(MAX_CLUSTER_SIZE/10000.0) \
+    , "10^{-5}" color_1(MAX_CLUSTER_SIZE/100000.0) \
+    , "10^{-6}" color_1(MAX_CLUSTER_SIZE/1000000.0) \
+  )
+  set colorbox user origin 0.87, 0.1 size 0.025, 0.85
+} else {
+  set cbtics ( \
+    sprintf("%.0f", MAX_CLUSTER_SIZE) color_1(MAX_CLUSTER_SIZE) \
+    ,                          "10^4" color_1(10000) \
+    ,                          "10^3" color_1( 1000) \
+    ,                          "10^2" color_1(  100) \
+    ,                          "10^1" color_1(   10) \
+    ,                             "1" color_1(    1) \
+  )
+  set colorbox user origin 0.82, 0.1 size 0.025, 0.85
+}
 
-set colorbox user origin 0.82, 0.1 size 0.025, 0.85
-#set colorbox origin screen 0.9, screen 0.9
 
 plot \
 US_STATES_MAP u 2:1 w filledcurves lw 1 fs solid border lc rgb "#808080" fc rgb "#FFFFFF" not, \

@@ -1,15 +1,16 @@
 # Tested with gnuplot 4.6 patchlevel 6
 
 FN_IN = system("echo $FN_IN")
+DAILY_MAX = system("echo $DAILY_MAX") + 0
 FN_OUT = system("echo $FN_OUT")
 
 set print "-"
-#print sprintf("MAX_CLUSTER_SIZE=%f", MAX_CLUSTER_SIZE)
+print sprintf("DAILY_MAX=%.0f", DAILY_MAX)
 
 set terminal pdfcairo enhanced size 2.3in, (2.3*0.85)in
 set output FN_OUT
 
-set rmargin screen 0.98
+set rmargin screen 0.96
 
 set xdata time
 set timefmt "%Y-%m-%d"
@@ -25,19 +26,25 @@ set xtics nomirror tc rgb "#808080" ( \
 )
 # mxtics can not be set when xtics intervals are irregular or are explicitly set
 
-set ytics nomirror tc rgb "#808080" autofreq 0,1
-
 set grid xtics ytics front lc rgb "#808080"
-set border lc rgb "#808080"
+set border back lc rgb "#808080"
 
 set xlabel "Time (month)"
-set ylabel "Number of accesses (K)" offset 1,0
 
 set xrange ["2016-06-01":"2017-05-31"]
-set yrange [0:]
 
-plot \
-FN_IN u 1:($2/1000) w lp pt 7 ps 0.1 not, \
+relative_y = 1
+if (relative_y) {
+  set yrange [0:]
+  set ytics nomirror tc rgb "#808080" format "%.1f"
+  set ylabel "Number of accesses\n(relative)" offset 0.5,0
+  plot FN_IN u 1:($2/DAILY_MAX) w lp pt 7 ps 0.1 not
+} else {
+  set yrange [0:]
+  set ytics nomirror tc rgb "#808080" autofreq 0,1
+  set ylabel "Number of accesses (K)" offset 1,0
+  plot FN_IN u 1:($2/1000) w lp pt 7 ps 0.1 not
+}
 
 # Hard to explain
 #FN_IN u 1:($2/1000) w l smooth bezier lw 2 lc "blue" not

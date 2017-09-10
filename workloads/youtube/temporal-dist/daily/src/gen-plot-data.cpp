@@ -30,13 +30,22 @@ namespace GenPlotData {
       }
     }
 
-    const string& fn = Conf::fn_plot_data;
-    ofstream ofs(fn);
+    int daily_max = 0;
+    for (auto i: date_cnt)
+      daily_max = max(daily_max, i.second);
+
+    string fn_out = Conf::GetString("out_fn");
+    string dn_out = boost::filesystem::path(__FILE__).parent_path().string();
+		boost::filesystem::create_directories(dn_out);
+
+    ofstream ofs(fn_out);
+    ofs << "# daily_max=" << daily_max << "\n";
+    ofs << "#\n";
     ofs << "# date cnt\n";
     for (auto i: date_cnt)
       ofs << boost::format("%s %d\n") % i.first % i.second;
     ofs.close();
-    Cons::P(boost::format("Created %s %d") % fn % boost::filesystem::file_size(fn));
+    Cons::P(boost::format("Created %s %d") % fn_out % boost::filesystem::file_size(fn_out));
   }
 
 };

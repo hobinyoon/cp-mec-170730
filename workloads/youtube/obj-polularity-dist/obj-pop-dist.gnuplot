@@ -35,7 +35,7 @@ set ytics nomirror tc rgb "#808080" ( \
 )
 
 set grid xtics ytics front lc rgb "#808080"
-set border lc rgb "#808080"
+set border back lc rgb "#808080"
 
 set xlabel "Object rank"
 set ylabel "Number of accesses\n(relative)"

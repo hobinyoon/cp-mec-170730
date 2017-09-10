@@ -15,7 +15,7 @@ set rmargin screen 0.96
 set xdata time
 set timefmt "%Y-%m-%d"
 
-set xtics nomirror tc rgb "#808080" ( \
+set xtics nomirror tc rgb "black" ( \
   "Jun" "2016-06-01" \
 , "Aug" "2016-08-01" \
 , "Oct" "2016-10-01" \
@@ -36,12 +36,12 @@ set xrange ["2016-06-01":"2017-05-31"]
 relative_y = 1
 if (relative_y) {
   set yrange [0:]
-  set ytics nomirror tc rgb "#808080" format "%.1f"
+  set ytics nomirror tc rgb "black" format "%.1f"
   set ylabel "Number of accesses\n(relative)" offset 0.5,0
   plot FN_IN u 1:($2/DAILY_MAX) w lp pt 7 ps 0.1 not
 } else {
   set yrange [0:]
-  set ytics nomirror tc rgb "#808080" autofreq 0,1
+  set ytics nomirror tc rgb "black" autofreq 0,1
   set ylabel "Number of accesses (K)" offset 1,0
   plot FN_IN u 1:($2/1000) w lp pt 7 ps 0.1 not
 }

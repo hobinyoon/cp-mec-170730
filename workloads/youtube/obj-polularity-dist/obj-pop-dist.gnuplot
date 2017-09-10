@@ -17,7 +17,7 @@ set output FN_OUT
 
 set rmargin screen 0.97
 
-set xtics nomirror tc rgb "#808080" ( \
+set xtics nomirror tc rgb "black" ( \
   "1"          1 \
 , "10"        10 \
 , "10^2"     100 \
@@ -27,7 +27,7 @@ set xtics nomirror tc rgb "#808080" ( \
 , "10^6" 1000000 \
 )
 
-set ytics nomirror tc rgb "#808080" ( \
+set ytics nomirror tc rgb "black" ( \
   "1"       1 \
 , "10^{-1}" 0.1 \
 , "10^{-2}" 0.01 \

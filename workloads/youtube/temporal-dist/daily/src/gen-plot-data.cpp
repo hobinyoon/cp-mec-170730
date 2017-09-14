@@ -36,7 +36,7 @@ namespace GenPlotData {
 
     string fn_out = Conf::GetString("out_fn");
     string dn_out = boost::filesystem::path(__FILE__).parent_path().string();
-		boost::filesystem::create_directories(dn_out);
+    boost::filesystem::create_directories(dn_out);
 
     ofstream ofs(fn_out);
     ofs << "# daily_max=" << daily_max << "\n";

@@ -51,26 +51,27 @@ namespace GenPlotData {
       dow_cnt[dow].push_back(i.second);
     }
 
+    string fn_out = Conf::GetString("out_fn");
+    string dn_out = boost::filesystem::path(__FILE__).parent_path().string();
+    boost::filesystem::create_directories(dn_out);
+
+    ofstream ofs(fn_out);
+    string fmt = "%3s %7.2f %4f %4f %4f %4f %4f";
+    ofs << Util::BuildHeader(fmt, "Dow avg min 25p 50p 75p max") << "\n";
+
+    int weekly_max = 0;
     for (auto i: dow_cnt) {
       auto dow = i.first;
       auto cnts = i.second;
 
       Stat::Result<int> r = Stat::Gen<int>(cnts);
-      Cons::P(boost::format("%s %.2f %4f %4f %4f %4f %4f") % dow % r.avg % r.min % r._25p % r._50p % r._75p % r.max);
+      ofs << boost::format(fmt + "\n") % dow % r.avg % r.min % r._25p % r._50p % r._75p % r.max;
+      weekly_max = max(weekly_max, r.max);
     }
 
-    //N5boost9gregorian12greg_weekdayE
-    //cout << typeid(date1.day_of_week()).name() << '\n';
-
-    exit(1);
-
-//    const string& fn = Conf::fn_plot_data;
-//    ofstream ofs(fn);
-//    ofs << "# date cnt\n";
-//    for (auto i: date_cnt)
-//      ofs << boost::format("%s %d\n") % i.first % i.second;
-//    ofs.close();
-//    Cons::P(boost::format("Created %s %d") % fn % boost::filesystem::file_size(fn));
+    ofs << "# weekly_max=" << weekly_max << "\n";
+    ofs.close();
+    Cons::P(boost::format("Created %s %d") % fn_out % boost::filesystem::file_size(fn_out));
   }
 
 };

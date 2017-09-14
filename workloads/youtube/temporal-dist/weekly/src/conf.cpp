@@ -13,9 +13,6 @@
 using namespace std;
 
 namespace Conf {
-	string dn_plot_data;
-	string fn_plot_data;
-
 	YAML::Node _yaml_root;
 
 	void _LoadYaml() {
@@ -47,8 +44,8 @@ namespace Conf {
 	void _ParseArgs(int argc, char* argv[]) {
 		po::options_description od("Allowed options");
 		od.add_options()
-			("youtube_workload",
-			 po::value<string>()->default_value(Conf::GetString("youtube_workload")))
+			("youtube_workload", po::value<string>()->default_value(Conf::GetString("youtube_workload")))
+			("out_fn", po::value<string>()->default_value(Conf::GetString("out_fn")))
 			("help", "show help message")
 			;
 
@@ -64,6 +61,7 @@ namespace Conf {
 		}
 
 		__EditYaml<string>("youtube_workload", vm);
+		__EditYaml<string>("out_fn", vm);
 	}
 
 	void Init(int argc, char* argv[]) {
@@ -71,17 +69,6 @@ namespace Conf {
 
 		_LoadYaml();
 		_ParseArgs(argc, argv);
-
-		dn_plot_data = str(boost::format("%s/../.output")
-				% boost::filesystem::path(__FILE__).parent_path().string());
-		boost::filesystem::create_directories(dn_plot_data);
-		fn_plot_data = str(boost::format("%s/%s-temporal-dist")
-				% dn_plot_data
-				% boost::filesystem::path(GetString("youtube_workload")).filename().string()
-        );
-
-		Cons::P(boost::format("dn_plot_data=%s") % dn_plot_data);
-		Cons::P(boost::format("fn_plot_data=%s") % fn_plot_data);
 	}
 
 	YAML::Node Get(const std::string& k) {
